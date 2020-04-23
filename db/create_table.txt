@@ -1,0 +1,8 @@
+# create this table in mysql
+CREATE TABLE `product` (
+  `product_id` int NOT NULL AUTO_INCREMENT,
+  `product_name` varchar(45) NOT NULL,
+  `product_status` tinyint NOT NULL DEFAULT '1',
+  PRIMARY KEY (`product_id`),
+  UNIQUE KEY `product_name_UNIQUE` (`product_name`)
+);
