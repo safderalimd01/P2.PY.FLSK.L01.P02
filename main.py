@@ -1,13 +1,26 @@
 from app import app
 from flask import request, jsonify
 import mysql.connector
-from config import fn_connect_db
+from dotenv import load_dotenv
 import json
+
+import os
+import mysql.connector
+
+config = {
+    'user': os.environ.get('user'),
+    'password': os.environ.get('password'),
+    'host': os.environ.get('host'),
+    'database': os.environ.get('database')
+}
 
 @app.route('/productList')
 def product_listing():
 	try:
-		db = fn_connect_db()
+		db = mysql.connector.connect(user = os.environ.get('user'),
+									 password = os.environ.get('password'),
+									 host = os.environ.get('host'),
+									 database = os.environ.get('database'))
 		if not isinstance(db, str):
 			cursor = db.cursor()
 			cursor.callproc('sproc_product_list')
@@ -15,16 +28,12 @@ def product_listing():
 			for result in cursor.stored_results():
 				res = result.fetchall()
 				rowncols = [dict(zip(result.column_names, x)) for x in res]
-
+			close_connection(db, cursor)
 			return api_success(rowncols, None, "Products listed successfully")
 		else:
 			return api_failure(str(db))
 	except Exception as error:
 		return api_failure(str(error))
-	finally:
-		if not isinstance(db, str):
-			cursor.close()
-			db.close()
 
 
 @app.route('/productDetail/<int:id>', methods=['GET'])
@@ -33,7 +42,10 @@ def product_details(id):
 		inputData = (id,)
 		outputData = (0, 0, 0)
 		bindData = inputData + outputData
-		db = fn_connect_db()
+		db = mysql.connector.connect(user = os.environ.get('user'),
+									 password = os.environ.get('password'),
+									 host = os.environ.get('host'),
+									 database = os.environ.get('database'))
 		if not isinstance(db, str):
 			cursor = db.cursor()
 
@@ -43,15 +55,12 @@ def product_details(id):
 			for result in cursor.stored_results():
 				res = result.fetchall()
 				rowncols = [dict(zip(result.column_names, x)) for x in res]
+			close_connection(db, cursor)
 			return api_success(rowncols, None, "Products details fetched successfully")
 		else:
 			return api_failure(str(db))
 	except Exception as e:
 		return api_failure(str(e))
-	finally:
-		if not isinstance(db, str):
-			cursor.close()
-			db.close()
 
 @app.route('/productFilter/<int:product_status>', methods=['GET'])
 def product_filter(product_status):
@@ -59,7 +68,10 @@ def product_filter(product_status):
 		inputData = (product_status,)
 		outputData = (0, 0, 0)
 		bindData = inputData + outputData
-		db = fn_connect_db()
+		db = mysql.connector.connect(user = os.environ.get('user'),
+									 password = os.environ.get('password'),
+									 host = os.environ.get('host'),
+									 database = os.environ.get('database'))
 		if not isinstance(db, str):
 			cursor = db.cursor()
 
@@ -76,15 +88,12 @@ def product_filter(product_status):
 				res = result.fetchall()
 				rowncols = [dict(zip(result.column_names, x)) for x in res]
 
+			close_connection(db, cursor)
 			return api_success(rowncols, argdict, "Products filtered successfully")
 		else:
 			return api_failure(str(db))
 	except Exception as e:
 		return api_failure(str(e))
-	finally:
-		if not isinstance(db, str):
-			cursor.close()
-			db.close()
 
 @app.route('/addProduct', methods=['POST'])
 def add_product():
@@ -95,7 +104,10 @@ def add_product():
 		inputData = (_product_name, _product_status)
 		outputData = (0, 0, 0)
 		bindData = inputData + outputData
-		db = fn_connect_db()
+		db = mysql.connector.connect(user = os.environ.get('user'),
+									 password = os.environ.get('password'),
+									 host = os.environ.get('host'),
+									 database = os.environ.get('database'))
 		if not isinstance(db, str):
 			cursor = db.cursor()
 
@@ -108,15 +120,12 @@ def add_product():
 			# assign parameter values
 			argdict = dict(zip(sproc_param_names[2:], sproc_result_args[2:]))
 
+			close_connection(db, cursor)
 			return api_success(None, argdict, "Product saved successfully")
 		else:
 			return api_failure(str(db))
 	except Exception as e:
 		return api_failure(str(e))
-	finally:
-		if not isinstance(db, str):
-			cursor.close()
-			db.close()
 
 @app.route('/updateProduct', methods=['PUT'])
 def update_product():
@@ -128,7 +137,10 @@ def update_product():
 		inputData = (_product_id, _product_name, _product_status)
 		outputData = (0, 0, 0)
 		bindData = inputData + outputData
-		db = fn_connect_db()
+		db = mysql.connector.connect(user = os.environ.get('user'),
+									 password = os.environ.get('password'),
+									 host = os.environ.get('host'),
+									 database = os.environ.get('database'))
 		if not isinstance(db, str):
 			cursor = db.cursor()
 
@@ -141,15 +153,12 @@ def update_product():
 			# assign parameter values
 			argdict = dict(zip(sproc_param_names[2:], sproc_result_args[2:]))
 
+			close_connection(db, cursor)
 			return api_success(None, argdict, "Product updated successfully")
 		else:
 			return api_failure(str(db))
 	except Exception as e:
 		return api_failure(str(e))
-	finally:
-		if not isinstance(db, str):
-			cursor.close()
-			db.close()
 
 @app.route('/deleteProduct/<int:id>', methods=['DELETE'])
 def delete_product(id):
@@ -157,7 +166,10 @@ def delete_product(id):
 		inputData = (id,)
 		outputData = (0, 0, 0)
 		bindData = inputData + outputData
-		db = fn_connect_db()
+		db = mysql.connector.connect(user = os.environ.get('user'),
+									 password = os.environ.get('password'),
+									 host = os.environ.get('host'),
+									 database = os.environ.get('database'))
 		if not isinstance(db, str):
 			cursor = db.cursor()
 
@@ -170,15 +182,12 @@ def delete_product(id):
 			# assign parameter values
 			argdict = dict(zip(sproc_param_names[1:], sproc_result_args[1:]))
 
+			close_connection(db, cursor)
 			return api_success(None, argdict, "Product deleted successfully")
 		else:
 			return api_failure(str(db))
 	except Exception as e:
 		return api_failure(str(e))
-	finally:
-		if not isinstance(db, str):
-			cursor.close()
-			db.close()
 
 
 
@@ -211,6 +220,11 @@ def api_success(rowncols, argdict, message):
 	if isinstance(rowncols, list):
 		respone["sproc_output_result"] = rowncols
 	return respone, 200
-	
+
+def close_connection(conn, cursor):
+	cursor.close()
+	conn.close()
+
 if __name__ == "__main__":
-    app.run()
+	load_dotenv()
+	app.run()
